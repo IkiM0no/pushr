@@ -12,41 +12,65 @@ import (
 	"bytes"
 	"encoding/csv"
 	"log"
+	//"os"
+	//"fmt"
 	"strings"
 	"time"
+	"strconv"
 )
 
 type CSVParser struct {
-	App         string
-	AppVer      string
-	Filename    string
-	Hostname    string
-	FieldsOrder []string
-	Table       []Attribute
-	Delimiter   rune
+	App           string
+	AppVer        string
+	Filename      string
+	Hostname      string
+	FieldsOrder   []string
+	Table         []Attribute
+	Delimiter     rune
+	SkipHeader    bool
+	CheckNHeaders int
 }
 
 func NewCSVParser(app, appVer, filename, hostname string, fieldsOrder []string, defaultTable []Attribute, options []string) *CSVParser {
 
-	delimiter := rune(',')
+
+	// Init defaults
+	delimiter     := rune(',')
+	skipHeader    := false
+	checkNHeaders := 2
 	parsedOptions := ParseOptions(options)
+
 	for k, v := range parsedOptions {
-		if k == "delimiter" {
+		var err error
+		switch k {
+		case "delimiter":
 			runes := []rune(v)
 			if len(runes) > 0 {
 				delimiter = runes[0]
+			}
+		case "skipheader" :
+			skipHeader, err = strconv.ParseBool(v)
+			if err != nil {
+				log.Printf(err.Error())
+			}
+		case "checknheaders" :
+			checkNHeaders, err = strconv.Atoi(v)
+			if err != nil {
+				log.Printf(err.Error())
 			}
 		}
 	}
 
 	return &CSVParser{
-		App:         app,
-		AppVer:      appVer,
-		Filename:    filename,
-		Hostname:    hostname,
-		FieldsOrder: fieldsOrder,
-		Table:       defaultTable,
-		Delimiter:   delimiter,
+		App:           app,
+		AppVer:        appVer,
+		Filename:      filename,
+		Hostname:      hostname,
+		FieldsOrder:   fieldsOrder,
+		Table:         defaultTable,
+		Delimiter:     delimiter,
+		SkipHeader:    skipHeader,
+		CheckNHeaders: checkNHeaders,
 	}
 }
 
@@ -82,6 +106,7 @@ func (p *CSVParser) Parse(line string) (map[string]string, error) {
 	var cleanLogLine bytes.Buffer
 
 	record, err := r.Read()
+
 	if err != nil {
 		log.Printf(err.Error())
 		return result, err
@@ -89,6 +114,13 @@ func (p *CSVParser) Parse(line string) (map[string]string, error) {
 
 	if len(record) != len(p.FieldsOrder) {
 		return result, ErrCSVFieldsOrderDoNotMatch
+	}
+
+	// Skip Headers
+	lenEval := len(strings.Join(p.FieldsOrder[:p.CheckNHeaders], string(p.Delimiter)))
+
+	if p.SkipHeader &&  strings.ToLower(strings.Replace(line, "\"", "", -1 ))[:lenEval] == strings.Join(p.FieldsOrder[:p.CheckNHeaders], string(p.Delimiter)) {
+		return result, nil
 	}
 
 	for i, field := range p.FieldsOrder {
