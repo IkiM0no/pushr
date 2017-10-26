@@ -15,3 +15,11 @@
 pkg/
 bin/
 vendor/src/
+
+# VIM
+*.swo
+*.swp
+
+# Tests and dev
+*.csv
+*.state
