@@ -12,8 +12,6 @@ import (
 	"bytes"
 	"encoding/csv"
 	"log"
-	//"os"
-	//"fmt"
 	"strings"
 	"time"
 	"strconv"
@@ -32,7 +30,6 @@ type CSVParser struct {
 }
 
 func NewCSVParser(app, appVer, filename, hostname string, fieldsOrder []string, defaultTable []Attribute, options []string) *CSVParser {
-
 
 	// Init defaults
 	delimiter     := rune(',')
@@ -149,5 +146,4 @@ func (p *CSVParser) Parse(line string) (map[string]string, error) {
 	result["log_line"] = strings.TrimSpace(string(srcByte))
 
 	return result, err
-
 }
