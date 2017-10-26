@@ -45,12 +45,12 @@ func NewCSVParser(app, appVer, filename, hostname string, fieldsOrder []string, 
 			if len(runes) > 0 {
 				delimiter = runes[0]
 			}
-		case "skipheader" :
+		case "skipheader":
 			skipHeader, err = strconv.ParseBool(v)
 			if err != nil {
 				log.Printf(err.Error())
 			}
-		case "checknheaders" :
+		case "checknheaders":
 			checkNHeaders, err = strconv.Atoi(v)
 			if err != nil {
 				log.Printf(err.Error())
