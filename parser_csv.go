@@ -114,6 +114,7 @@ func (p *CSVParser) Parse(line string) (map[string]string, error) {
 	}
 
 	// Skip Headers
+	// Cannot nest lenEval in check for p.SkipHeader - https://github.com/golang/go/issues/18664
 	lenEval := len(strings.Join(p.FieldsOrder[:p.CheckNHeaders], string(p.Delimiter)))
 
 	if p.SkipHeader &&  strings.ToLower(strings.Replace(line, "\"", "", -1 ))[:lenEval] == strings.Join(p.FieldsOrder[:p.CheckNHeaders], string(p.Delimiter)) {
@@ -146,4 +147,5 @@ func (p *CSVParser) Parse(line string) (map[string]string, error) {
 	result["log_line"] = strings.TrimSpace(string(srcByte))
 
 	return result, err
+
 }
